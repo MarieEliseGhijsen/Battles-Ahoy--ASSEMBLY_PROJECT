@@ -1,0 +1,152 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 06/04/2026 17:18:46
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000                             9  
+00001000                            10  * Put program code here
+00001000  2E7C 00002000             11      MOVE.L #$2000, A7
+00001006                            12  
+00001006  4EB9 0000101A             13      JSR INIT_GAME
+0000100C  4EB9 00001028             14      JSR PLACE_SHIPS
+00001012                            15  
+00001012                            16  GAME_LOOP:
+00001012  4EB9 0000106E             17      JSR GAME_TURN
+00001018  60F8                      18      BRA GAME_LOOP
+0000101A                            19  
+0000101A                            20  *-----------------------------------------------------------
+0000101A                            21  *sub-routines
+0000101A                            22  *-----------------------------------------------------------
+0000101A                            23  INIT_GAME:
+0000101A  303C 000D                 24      MOVE #13, D0
+0000101E  43F9 000010C0             25      LEA MSG_INIT, A1
+00001024  4E4F                      26      TRAP #15
+00001026  4E75                      27      RTS
+00001028                            28      
+00001028                            29  PLACE_SHIPS:
+00001028  3E3C 0004                 30      MOVE #4, D7 ;num ships
+0000102C                            31      
+0000102C                            32  PLACE_LOOP:
+0000102C  4EB9 00001044             33      JSR ENTER_COORDINATE
+00001032  4EB9 00001052             34      JSR VALIDATE_PLACEMENT
+00001038  4EB9 00001060             35      JSR STORE_SHIP
+0000103E                            36  
+0000103E  5347                      37      SUBQ #1, D7
+00001040  66EA                      38      BNE PLACE_LOOP
+00001042                            39  
+00001042  4E75                      40      RTS
+00001044                            41      
+00001044                            42  ENTER_COORDINATE:
+00001044  303C 000D                 43      MOVE #13, D0
+00001048  43F9 000010D7             44      LEA MSG_ENTER_COORD, A1
+0000104E  4E4F                      45      TRAP #15
+00001050  4E75                      46      RTS
+00001052                            47      
+00001052                            48  VALIDATE_PLACEMENT:
+00001052  303C 000D                 49      MOVE #13, D0
+00001056  43F9 000010F0             50      LEA MSG_VALIDATE_PLACE, A1
+0000105C  4E4F                      51      TRAP #15
+0000105E  4E75                      52      RTS
+00001060                            53  
+00001060                            54  
+00001060                            55  STORE_SHIP:
+00001060  303C 000D                 56      MOVE #13, D0
+00001064  43F9 0000110A             57      LEA MSG_STORE_SHIP, A1
+0000106A  4E4F                      58      TRAP #15
+0000106C  4E75                      59      RTS
+0000106E                            60      
+0000106E                            61  GAME_TURN:
+0000106E  303C 000D                 62      MOVE #13, D0
+00001072  43F9 0000111C             63      LEA MSG_GAME_LOOP, A1
+00001078  4E4F                      64      TRAP #15
+0000107A                            65  
+0000107A  4EB8 1044                 66      JSR ENTER_COORDINATE
+0000107E  4EB9 00001092             67      JSR CHECK_COORDINATES
+00001084  4EB9 000010A0             68      JSR CHECK_BATTLESHIPS
+0000108A  4EB9 000010AE             69      JSR CHANGE_TURN
+00001090                            70  
+00001090  4E75                      71      RTS
+00001092                            72      
+00001092                            73  CHECK_COORDINATES:
+00001092  303C 000D                 74      MOVE #13, D0
+00001096  43F9 0000112E             75      LEA MSG_CHECK_COORD, A1
+0000109C  4E4F                      76      TRAP #15
+0000109E  4E75                      77      RTS
+000010A0                            78  
+000010A0                            79  
+000010A0                            80  CHECK_BATTLESHIPS:
+000010A0  303C 000D                 81      MOVE #13, D0
+000010A4  43F9 00001148             82      LEA MSG_CHECK_SHIPS, A1
+000010AA  4E4F                      83      TRAP #15
+000010AC  4E75                      84      RTS
+000010AE                            85      
+000010AE                            86  CHANGE_TURN:
+000010AE  303C 000D                 87      MOVE #13, D0
+000010B2  43F9 0000116C             88      LEA MSG_CHANGE_TURN, A1
+000010B8  4E4F                      89      TRAP #15
+000010BA  4E75                      90      RTS
+000010BC                            91      
+000010BC  FFFF FFFF                 92      SIMHALT             ; halt simulator
+000010C0                            93  
+000010C0                            94  * Put variables and constants here
+000010C0                            95      MSG_INIT: 
+000010C0= 49 6E 69 74 69 61 ...     96          DC.B 'Initializing game...'
+000010D4= 0D 0A 00                  97          DC.B 13,10,0
+000010D7                            98      MSG_ENTER_COORD:    
+000010D7= 45 6E 74 65 72 69 ...     99          DC.B 'Entering coordinate...'
+000010ED= 0D 0A 00                 100          DC.B 13,10,0
+000010F0                           101      MSG_VALIDATE_PLACE: 
+000010F0= 56 61 6C 69 64 61 ...    102          DC.B 'Validating placement...'
+00001107= 0D 0A 00                 103          DC.B 13,10,0
+0000110A                           104      MSG_STORE_SHIP:     
+0000110A= 53 74 6F 72 69 6E ...    105          DC.B 'Storing ship...'
+00001119= 0D 0A 00                 106          DC.B 13,10,0
+0000111C                           107      MSG_GAME_LOOP:      
+0000111C= 49 6E 20 67 61 6D ...    108          DC.B 'In game loop...'
+0000112B= 0D 0A 00                 109          DC.B 13,10,0
+0000112E                           110      MSG_CHECK_COORD:    
+0000112E= 43 68 65 63 6B 69 ...    111          DC.B 'Checking coordinates...'
+00001145= 0D 0A 00                 112          DC.B 13,10,0
+00001148                           113      MSG_CHECK_SHIPS:    
+00001148= 43 68 65 63 6B 69 ...    114          DC.B 'Checking remaining battleships...'
+00001169= 0D 0A 00                 115          DC.B 13,10,0
+0000116C                           116      MSG_CHANGE_TURN:    
+0000116C= 43 68 61 6E 67 69 ...    117          DC.B 'Changing turn...'
+0000117C= 0D 0A 00                 118          DC.B 13,10,0
+0000117F                           119  
+0000117F                           120      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+CHANGE_TURN         10AE
+CHECK_BATTLESHIPS   10A0
+CHECK_COORDINATES   1092
+ENTER_COORDINATE    1044
+GAME_LOOP           1012
+GAME_TURN           106E
+INIT_GAME           101A
+MSG_CHANGE_TURN     116C
+MSG_CHECK_COORD     112E
+MSG_CHECK_SHIPS     1148
+MSG_ENTER_COORD     10D7
+MSG_GAME_LOOP       111C
+MSG_INIT            10C0
+MSG_STORE_SHIP      110A
+MSG_VALIDATE_PLACE  10F0
+PLACE_LOOP          102C
+PLACE_SHIPS         1028
+START               1000
+STORE_SHIP          1060
+VALIDATE_PLACEMENT  1052
