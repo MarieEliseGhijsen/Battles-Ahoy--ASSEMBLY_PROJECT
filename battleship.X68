@@ -18,6 +18,9 @@ START:                  ; first instruction of program
     
     ;GAMEPLAY
     JSR GAME_TURN
+    JSR GAME_TURN
+    JSR GAME_TURN
+    JSR GAME_TURN
 
     ;RESULT
     ;JSR PRINT_ALL_COORDS
@@ -390,41 +393,105 @@ GAME_TURN:
     LEA MSG_GAME_LOOP, A1
     TRAP #15
 
+TURN_LOOP:
     JSR ENTER_COORDINATE
     JSR CHECK_COORDINATES
     
     ;JSR CHECK_BATTLESHIPS
     ;JSR CHANGE_TURN
+    
+    CMP.B #1, D7
+    BEQ TURN_DONE
 
+    BRA TURN_LOOP
+    
+TURN_DONE:
     RTS
     
 CHECK_COORDINATES:
     MOVE.B D0, D5
     MOVE.B D1, D6
+    
+    *check if in bounds
+    CMP.B #0, D0
+    BLT OUT_OF_BOUNDS
+    CMP.B #3, D0
+    BGT OUT_OF_BOUNDS
+
+    CMP.B #0, D1
+    BLT OUT_OF_BOUNDS
+    CMP.B #3, D1
+    BGT OUT_OF_BOUNDS
+    
+    *get valu
     JSR GET_OFFSET
     
     LEA BOARD_P2, A0
     MOVE.B (A0,D2.W), D4
     
+    *check if guessed already
+    CMP.B #3, D4
+    BEQ ALREADY_GUESSED
+    CMP.B #4, D4
+    BEQ ALREADY_GUESSED
+    
     CMP.B #1, D4
     BEQ IS_HIT
     
 IS_MISS:
+    MOVE #6, D0 ;CR
+    MOVE #10, D1 ;LF
+    TRAP #15
+    
     MOVE.B #3, (A0,D2.W)
 
     MOVE #13, D0
     LEA MSG_MISS, A1
     TRAP #15
+    
+    MOVEQ #1, D7
 
     RTS
     
 IS_HIT:
+    MOVE #6, D0 ;CR
+    MOVE #10, D1 ;LF
+    TRAP #15
+
     MOVE.B #4, (A0,D2.W)
 
     MOVE #13, D0
     LEA MSG_HIT, A1
     TRAP #15
+    
+    MOVEQ #1, D7
 
+    RTS
+    
+ALREADY_GUESSED:
+    MOVE #6, D0 ;CR
+    MOVE #10, D1 ;LF
+    TRAP #15
+
+    MOVE #13, D0
+    LEA MSG_ALREADY, A1
+    TRAP #15
+    
+    CLR.L D7
+
+    RTS
+    
+OUT_OF_BOUNDS:
+    MOVE #6, D0 ;CR
+    MOVE #10, D1 ;LF
+    TRAP #15
+
+    MOVE #13, D0
+    LEA MSG_INVALID_INPUT, A1
+    TRAP #15
+
+    CLR.L D7
+    
     RTS
 
 CHECK_BATTLESHIPS:
@@ -478,26 +545,34 @@ CHANGE_TURN:
         DC.B 13,10,0
         
 *prompt messages
-    MSG_ENTER_COORD:    
-        DC.B 'Enter coordinate (FROMAT EG. 1A) :'
-        DC.B 13,10,0
     MSG_P1_ENTER_SHIP:    
         DC.B 'Player One Place Ships'
         DC.B 13,10,0
     MSG_P2_ENTER_SHIP:    
         DC.B 'Player Two Place Ships'
         DC.B 13,10,0
-    MSG_P1_SHOW:
-        DC.B 'Player Ones Coordinates are: '
+        
+    MSG_ENTER_COORD:    
+        DC.B 'Enter coordinate (FROMAT EG. 1A) :'
         DC.B 13,10,0
-    MSG_P2_SHOW:
-        DC.B 'Player Twos Coordinates are: '
+    MSG_ALREADY:
+        DC.B 'Already guessed that location!'
+        DC.B 13,10,0
+    MSG_INVALID_INPUT:
+        DC.B 'Invalid Input'
         DC.B 13,10,0
     MSG_MISS:
         DC.B 'Miss!'
         DC.B 13,10,0
     MSG_HIT:
         DC.B 'Hit!'
+        DC.B 13,10,0
+        
+    MSG_P1_SHOW:
+        DC.B 'Player Ones Coordinates are: '
+        DC.B 13,10,0
+    MSG_P2_SHOW:
+        DC.B 'Player Twos Coordinates are: '
         DC.B 13,10,0
 
     END    START        ; last line of source
