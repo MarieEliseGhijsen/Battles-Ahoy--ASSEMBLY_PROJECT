@@ -11,8 +11,9 @@ START:                  ; first instruction of program
     MOVE.L #$2000, A7
 
     JSR INIT_GAME
-    JSR PLACE_SHIPS_P1
-    JSR PLACE_SHIPS_P2
+    ;JSR PLACE_SHIPS_P1
+    ;JSR PLACE_SHIPS_P2
+    JSR LOAD_TEST_BOARDS
 
     ;JSR PRINT_ALL_COORDS
     JSR PRINT_ALL_BOARDS
@@ -23,6 +24,54 @@ END_LOOP:
 *-----------------------------------------------------------
 *sub-routines
 *-----------------------------------------------------------
+*-----------------------------------------------------------
+*load predetermined boards (for testing)
+*-----------------------------------------------------------
+LOAD_TEST_BOARDS:
+    *Player 1 ships - A3, D2, B1
+    
+    *A3 row=2 col=0
+    MOVE.B #2, D5
+    MOVE.B #0, D6
+    JSR GET_OFFSET
+    LEA BOARD_P1, A0
+    MOVE.B #1, (A0,D2.W)
+    
+    *D2 row=1 col=3
+    MOVE.B #1, D5
+    MOVE.B #3, D6
+    JSR GET_OFFSET
+    MOVE.B #1, (A0,D2.W)
+
+    *B1 row=0 col=1
+    MOVE.B #0, D5
+    MOVE.B #1, D6
+    JSR GET_OFFSET
+    MOVE.B #1, (A0,D2.W)
+    
+    * Player 2 ships - B3, A1, C3
+    LEA BOARD_P2, A0
+
+    *B3 row=2 col=1
+    MOVE.B #2, D5
+    MOVE.B #1, D6
+    JSR GET_OFFSET
+    MOVE.B #1, (A0,D2.W)
+    
+    *A1 row=0 col=0
+    MOVE.B #0, D5
+    MOVE.B #0, D6
+    JSR GET_OFFSET
+    MOVE.B #1, (A0,D2.W)
+
+    *C3 row=2 col=2
+    MOVE.B #2, D5
+    MOVE.B #2, D6
+    JSR GET_OFFSET
+    MOVE.B #1, (A0,D2.W)
+    
+    RTS
+
 *-----------------------------------------------------------
 *init
 *-----------------------------------------------------------
@@ -161,6 +210,8 @@ PRINT_ALL_BOARDS:
     
     LEA BOARD_P1, A0
     JSR PRINT_BOARD_GRID
+    
+    JSR WAIT_FOR_KEY
 
     MOVE #13, D0
     LEA MSG_P2_SHOW, A1
@@ -211,6 +262,13 @@ DONE_GRID_PRINT:
     MOVE #6, D0 ;CR
     MOVE #10, D1 ;LF
     TRAP #15
+    
+    RTS
+    
+WAIT_FOR_KEY:
+    MOVE #5, D0 ;read single character
+    TRAP #15 ;wait until key pressed
+
     RTS
        
 *-----------------------------------------------------------
@@ -439,6 +497,7 @@ CHANGE_TURN:
 ;WON:
 ;win message out to console
 ;go to init
+
 
 
 
