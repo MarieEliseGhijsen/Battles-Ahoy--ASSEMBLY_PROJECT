@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 06/04/2026 17:18:46
+Created On: 08/04/2026 19:57:16
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -14,114 +14,377 @@ Created On: 06/04/2026 17:18:46
 00001000                            10  * Put program code here
 00001000  2E7C 00002000             11      MOVE.L #$2000, A7
 00001006                            12  
-00001006  4EB9 0000101A             13      JSR INIT_GAME
-0000100C  4EB9 00001028             14      JSR PLACE_SHIPS
-00001012                            15  
-00001012                            16  GAME_LOOP:
-00001012  4EB9 0000106E             17      JSR GAME_TURN
-00001018  60F8                      18      BRA GAME_LOOP
-0000101A                            19  
-0000101A                            20  *-----------------------------------------------------------
-0000101A                            21  *sub-routines
-0000101A                            22  *-----------------------------------------------------------
-0000101A                            23  INIT_GAME:
-0000101A  303C 000D                 24      MOVE #13, D0
-0000101E  43F9 000010C0             25      LEA MSG_INIT, A1
-00001024  4E4F                      26      TRAP #15
-00001026  4E75                      27      RTS
-00001028                            28      
-00001028                            29  PLACE_SHIPS:
-00001028  3E3C 0004                 30      MOVE #4, D7 ;num ships
-0000102C                            31      
-0000102C                            32  PLACE_LOOP:
-0000102C  4EB9 00001044             33      JSR ENTER_COORDINATE
-00001032  4EB9 00001052             34      JSR VALIDATE_PLACEMENT
-00001038  4EB9 00001060             35      JSR STORE_SHIP
-0000103E                            36  
-0000103E  5347                      37      SUBQ #1, D7
-00001040  66EA                      38      BNE PLACE_LOOP
-00001042                            39  
-00001042  4E75                      40      RTS
-00001044                            41      
-00001044                            42  ENTER_COORDINATE:
-00001044  303C 000D                 43      MOVE #13, D0
-00001048  43F9 000010D7             44      LEA MSG_ENTER_COORD, A1
-0000104E  4E4F                      45      TRAP #15
-00001050  4E75                      46      RTS
-00001052                            47      
-00001052                            48  VALIDATE_PLACEMENT:
-00001052  303C 000D                 49      MOVE #13, D0
-00001056  43F9 000010F0             50      LEA MSG_VALIDATE_PLACE, A1
-0000105C  4E4F                      51      TRAP #15
-0000105E  4E75                      52      RTS
-00001060                            53  
-00001060                            54  
-00001060                            55  STORE_SHIP:
-00001060  303C 000D                 56      MOVE #13, D0
-00001064  43F9 0000110A             57      LEA MSG_STORE_SHIP, A1
-0000106A  4E4F                      58      TRAP #15
-0000106C  4E75                      59      RTS
-0000106E                            60      
-0000106E                            61  GAME_TURN:
-0000106E  303C 000D                 62      MOVE #13, D0
-00001072  43F9 0000111C             63      LEA MSG_GAME_LOOP, A1
-00001078  4E4F                      64      TRAP #15
-0000107A                            65  
-0000107A  4EB8 1044                 66      JSR ENTER_COORDINATE
-0000107E  4EB9 00001092             67      JSR CHECK_COORDINATES
-00001084  4EB9 000010A0             68      JSR CHECK_BATTLESHIPS
-0000108A  4EB9 000010AE             69      JSR CHANGE_TURN
-00001090                            70  
-00001090  4E75                      71      RTS
-00001092                            72      
-00001092                            73  CHECK_COORDINATES:
-00001092  303C 000D                 74      MOVE #13, D0
-00001096  43F9 0000112E             75      LEA MSG_CHECK_COORD, A1
-0000109C  4E4F                      76      TRAP #15
-0000109E  4E75                      77      RTS
-000010A0                            78  
-000010A0                            79  
-000010A0                            80  CHECK_BATTLESHIPS:
-000010A0  303C 000D                 81      MOVE #13, D0
-000010A4  43F9 00001148             82      LEA MSG_CHECK_SHIPS, A1
-000010AA  4E4F                      83      TRAP #15
-000010AC  4E75                      84      RTS
-000010AE                            85      
-000010AE                            86  CHANGE_TURN:
-000010AE  303C 000D                 87      MOVE #13, D0
-000010B2  43F9 0000116C             88      LEA MSG_CHANGE_TURN, A1
-000010B8  4E4F                      89      TRAP #15
-000010BA  4E75                      90      RTS
-000010BC                            91      
-000010BC  FFFF FFFF                 92      SIMHALT             ; halt simulator
-000010C0                            93  
-000010C0                            94  * Put variables and constants here
-000010C0                            95      MSG_INIT: 
-000010C0= 49 6E 69 74 69 61 ...     96          DC.B 'Initializing game...'
-000010D4= 0D 0A 00                  97          DC.B 13,10,0
-000010D7                            98      MSG_ENTER_COORD:    
-000010D7= 45 6E 74 65 72 69 ...     99          DC.B 'Entering coordinate...'
-000010ED= 0D 0A 00                 100          DC.B 13,10,0
-000010F0                           101      MSG_VALIDATE_PLACE: 
-000010F0= 56 61 6C 69 64 61 ...    102          DC.B 'Validating placement...'
-00001107= 0D 0A 00                 103          DC.B 13,10,0
-0000110A                           104      MSG_STORE_SHIP:     
-0000110A= 53 74 6F 72 69 6E ...    105          DC.B 'Storing ship...'
-00001119= 0D 0A 00                 106          DC.B 13,10,0
-0000111C                           107      MSG_GAME_LOOP:      
-0000111C= 49 6E 20 67 61 6D ...    108          DC.B 'In game loop...'
-0000112B= 0D 0A 00                 109          DC.B 13,10,0
-0000112E                           110      MSG_CHECK_COORD:    
-0000112E= 43 68 65 63 6B 69 ...    111          DC.B 'Checking coordinates...'
-00001145= 0D 0A 00                 112          DC.B 13,10,0
-00001148                           113      MSG_CHECK_SHIPS:    
-00001148= 43 68 65 63 6B 69 ...    114          DC.B 'Checking remaining battleships...'
-00001169= 0D 0A 00                 115          DC.B 13,10,0
-0000116C                           116      MSG_CHANGE_TURN:    
-0000116C= 43 68 61 6E 67 69 ...    117          DC.B 'Changing turn...'
-0000117C= 0D 0A 00                 118          DC.B 13,10,0
-0000117F                           119  
-0000117F                           120      END    START        ; last line of source
+00001006  4EB9 00001020             13      JSR INIT_GAME
+0000100C  4EB9 0000104A             14      JSR PLACE_SHIPS_P1
+00001012  4EB9 00001072             15      JSR PLACE_SHIPS_P2
+00001018                            16  
+00001018                            17      ;JSR PRINT_ALL_COORDS
+00001018  4EB9 00001104             18      JSR PRINT_ALL_BOARDS
+0000101E                            19  
+0000101E                            20  END_LOOP:
+0000101E  60FE                      21      BRA END_LOOP
+00001020                            22  
+00001020                            23  *-----------------------------------------------------------
+00001020                            24  *sub-routines
+00001020                            25  *-----------------------------------------------------------
+00001020                            26  *-----------------------------------------------------------
+00001020                            27  *init
+00001020                            28  *-----------------------------------------------------------
+00001020                            29  INIT_GAME: ;clear both boards (16 bytes each)
+00001020  41F9 00001286             30      LEA BOARD_P1, A0
+00001026  700F                      31      MOVEQ #15, D0
+00001028                            32      
+00001028  303C 000D                 33      MOVE #13, D0
+0000102C  43F9 000012AE             34      LEA MSG_INIT, A1
+00001032  4E4F                      35      TRAP #15
+00001034                            36      
+00001034                            37  CLR1:
+00001034  4218                      38      CLR.B (A0)+
+00001036  51C8 FFFC                 39      DBF D0, CLR1
+0000103A                            40  
+0000103A  41F9 00001296             41      LEA BOARD_P2, A0
+00001040  700F                      42      MOVEQ #15, D0
+00001042                            43      
+00001042                            44  CLR2:
+00001042  4218                      45      CLR.B (A0)+
+00001044  51C8 FFFC                 46      DBF D0, CLR2
+00001048                            47      
+00001048  4E75                      48      RTS
+0000104A                            49      
+0000104A                            50  *-----------------------------------------------------------
+0000104A                            51  *place-ships
+0000104A                            52  *-----------------------------------------------------------
+0000104A                            53  PLACE_SHIPS_P1:
+0000104A  303C 000D                 54      MOVE #13, D0
+0000104E  43F9 00001364             55      LEA MSG_P1_ENTER_SHIP, A1
+00001054  4E4F                      56      TRAP #15
+00001056                            57  
+00001056  3E3C 0003                 58      MOVE #3, D7
+0000105A                            59      
+0000105A                            60  P1_LOOP:
+0000105A  4EB9 0000109A             61      JSR ENTER_COORDINATE
+00001060  4EB9 000010CA             62      JSR STORE_SHIP_P1
+00001066                            63      
+00001066  5347                      64      SUBQ #1, D7
+00001068  66F0                      65      BNE P1_LOOP
+0000106A                            66      
+0000106A  4EB9 00001228             67      JSR CLEAR_SCREEN
+00001070                            68      
+00001070  4E75                      69      RTS
+00001072                            70  
+00001072                            71  PLACE_SHIPS_P2:
+00001072  303C 000D                 72      MOVE #13, D0
+00001076  43F9 0000137D             73      LEA MSG_P2_ENTER_SHIP, A1
+0000107C  4E4F                      74      TRAP #15
+0000107E                            75  
+0000107E  3E3C 0003                 76      MOVE #3, D7
+00001082                            77      
+00001082                            78  P2_LOOP:
+00001082  4EB9 0000109A             79      JSR ENTER_COORDINATE
+00001088  4EB9 000010E2             80      JSR STORE_SHIP_P2
+0000108E                            81      
+0000108E  5347                      82      SUBQ #1, D7
+00001090  66F0                      83      BNE P2_LOOP
+00001092                            84      
+00001092  4EB9 00001228             85      JSR CLEAR_SCREEN
+00001098                            86      
+00001098  4E75                      87      RTS
+0000109A                            88          
+0000109A                            89  *-----------------------------------------------------------
+0000109A                            90  *get-coordinates (row column format, e.g. 1A)
+0000109A                            91  *-----------------------------------------------------------
+0000109A                            92  ENTER_COORDINATE:
+0000109A  303C 000D                 93      MOVE #13, D0
+0000109E  43F9 0000133F             94      LEA MSG_ENTER_COORD, A1
+000010A4  4E4F                      95      TRAP #15
+000010A6                            96  
+000010A6                            97      ;READ FIRST CHAR (ROW)
+000010A6  303C 0005                 98      MOVE #5, D0        ;read single char
+000010AA  4E4F                      99      TRAP #15           ;result in D1
+000010AC  1001                     100      MOVE.B D1, D0      ;move to D0
+000010AE  C0BC 000000FF            101      AND.L #$000000FF, D0
+000010B4  0400 0031                102      SUB.B #'1', D0     ;convert to 0–3
+000010B8                           103      
+000010B8                           104      ;READ SECOND CHAR (COLUM)
+000010B8                           105      ;CLR.L D1
+000010B8  303C 0005                106      MOVE #5, D0
+000010BC  4E4F                     107      TRAP #15
+000010BE  C2BC 000000FF            108      AND.L #$000000FF, D1
+000010C4  0401 0041                109      SUB.B #'A', D1     ;convert to 0–3
+000010C8                           110  
+000010C8  4E75                     111      RTS
+000010CA                           112      
+000010CA                           113  *VALIDATE_PLACEMENT:
+000010CA                           114  *    MOVE #13, D0
+000010CA                           115  *    LEA MSG_VALIDATE_PLACE, A1
+000010CA                           116  *    TRAP #15
+000010CA                           117  *    RTS
+000010CA                           118  
+000010CA                           119  *-----------------------------------------------------------
+000010CA                           120  *store-ships
+000010CA                           121  *-----------------------------------------------------------
+000010CA                           122  STORE_SHIP_P1:
+000010CA  1A00                     123      MOVE.B D0, D5
+000010CC  1C01                     124      MOVE.B D1, D6
+000010CE                           125      
+000010CE  4EB9 000010FA            126      JSR GET_OFFSET
+000010D4                           127      
+000010D4  41F9 00001286            128      LEA BOARD_P1, A0
+000010DA  11BC 0001 2000           129      MOVE.B #1, (A0,D2.W)
+000010E0                           130      
+000010E0  4E75                     131      RTS
+000010E2                           132  
+000010E2                           133  STORE_SHIP_P2:
+000010E2  1A00                     134      MOVE.B D0, D5
+000010E4  1C01                     135      MOVE.B D1, D6
+000010E6                           136      
+000010E6  4EB9 000010FA            137      JSR GET_OFFSET
+000010EC                           138      
+000010EC  41F9 00001296            139      LEA BOARD_P2, A0
+000010F2  11BC 0001 2000           140      MOVE.B #1, (A0,D2.W)
+000010F8                           141      
+000010F8  4E75                     142      RTS
+000010FA                           143      
+000010FA                           144  *-----------------------------------------------------------
+000010FA                           145  *offset
+000010FA                           146  *-----------------------------------------------------------
+000010FA                           147  GET_OFFSET:
+000010FA  1405                     148      MOVE.B D5, D2 ;row
+000010FC  C4FC 0004                149      MULU #4, D2 ;row*4
+00001100  D446                     150      ADD D6, D2 ;+ col
+00001102                           151      
+00001102  4E75                     152      RTS
+00001104                           153      
+00001104                           154  *-----------------------------------------------------------
+00001104                           155  *print-board-as-grid
+00001104                           156  *-----------------------------------------------------------G
+00001104                           157  PRINT_ALL_BOARDS:
+00001104  303C 000D                158      MOVE #13, D0
+00001108  43F9 00001396            159      LEA MSG_P1_SHOW, A1
+0000110E  4E4F                     160      TRAP #15
+00001110                           161      
+00001110  41F9 00001286            162      LEA BOARD_P1, A0
+00001116  4EB9 00001136            163      JSR PRINT_BOARD_GRID
+0000111C                           164  
+0000111C  303C 000D                165      MOVE #13, D0
+00001120  43F9 000013B6            166      LEA MSG_P2_SHOW, A1
+00001126  4E4F                     167      TRAP #15
+00001128                           168      
+00001128  41F9 00001296            169      LEA BOARD_P2, A0
+0000112E  4EB9 00001136            170      JSR PRINT_BOARD_GRID
+00001134                           171      
+00001134  4E75                     172      RTS
+00001136                           173      
+00001136                           174  PRINT_BOARD_GRID:
+00001136  7600                     175      MOVEQ #0, D3 ;index
+00001138                           176  
+00001138                           177  PRINT_GRID_LOOP:
+00001138  B67C 0010                178      CMP #16, D3
+0000113C  6700 0048                179      BEQ DONE_GRID_PRINT
+00001140                           180  
+00001140  1830 3000                181      MOVE.B (A0,D3.W), D4
+00001144  B83C 0001                182      CMP.B #1, D4
+00001148  6700 000A                183      BEQ PRINT_ONE
+0000114C  183C 0030                184      MOVE.B #'0', D4
+00001150  6000 0006                185      BRA PRINT_CHAR
+00001154                           186      
+00001154                           187  PRINT_ONE:
+00001154  183C 0031                188      MOVE.B #'1', D4
+00001158                           189  
+00001158                           190  PRINT_CHAR:
+00001158  43F9 000012AA            191      LEA OUT_BUF, A1
+0000115E  1284                     192      MOVE.B D4, (A1)
+00001160  137C 0000 0001           193      MOVE.B #0, 1(A1) ;null-terminate
+00001166  303C 000D                194      MOVE #13, D0
+0000116A  4E4F                     195      TRAP #15
+0000116C                           196  
+0000116C  5243                     197      ADDQ #1, D3
+0000116E                           198  
+0000116E                           199      ;newline every 4 cells
+0000116E  3A03                     200      MOVE.W D3, D5
+00001170  CA7C 0003                201      AND.W #3, D5
+00001174  BA7C 0000                202      CMP #0, D5
+00001178  66BE                     203      BNE PRINT_GRID_LOOP
+0000117A                           204      
+0000117A  303C 0006                205      MOVE #6, D0 ;CR
+0000117E  323C 000A                206      MOVE #10, D1 ;LF
+00001182  4E4F                     207      TRAP #15
+00001184  60B2                     208      BRA PRINT_GRID_LOOP
+00001186                           209  
+00001186                           210  DONE_GRID_PRINT:
+00001186  303C 0006                211      MOVE #6, D0 ;CR
+0000118A  323C 000A                212      MOVE #10, D1 ;LF
+0000118E  4E4F                     213      TRAP #15
+00001190  4E75                     214      RTS
+00001192                           215         
+00001192                           216  *-----------------------------------------------------------
+00001192                           217  *print-all-coordinates
+00001192                           218  *-----------------------------------------------------------
+00001192                           219  PRINT_ALL_COORDS:
+00001192  303C 000D                220      MOVE #13, D0
+00001196  43F9 00001396            221      LEA MSG_P1_SHOW, A1
+0000119C  4E4F                     222      TRAP #15
+0000119E                           223  
+0000119E  41F9 00001286            224      LEA BOARD_P1, A0
+000011A4  4EB9 000011C4            225      JSR PRINT_COORDS
+000011AA                           226  
+000011AA  303C 000D                227      MOVE #13, D0
+000011AE  43F9 000013B6            228      LEA MSG_P2_SHOW, A1
+000011B4  4E4F                     229      TRAP #15
+000011B6                           230          
+000011B6  41F9 00001296            231      LEA BOARD_P2, A0
+000011BC  4EB9 000011C4            232      JSR PRINT_COORDS
+000011C2                           233  
+000011C2  4E75                     234      RTS
+000011C4                           235      
+000011C4                           236  PRINT_COORDS: 
+000011C4  7600                     237      MOVEQ #0, D3
+000011C6                           238   
+000011C6                           239  PRINT_COORDS_LOOP: 
+000011C6  B67C 0010                240      CMP #16, D3 
+000011CA  6700 0050                241      BEQ DONE_COORDS_PRINT
+000011CE                           242      
+000011CE  1830 3000                243      MOVE.B (A0,D3.W), D4 
+000011D2  B83C 0001                244      CMP.B #1, D4 
+000011D6  6600 0040                245      BNE NEXT_COORDS_PRINT 
+000011DA                           246      
+000011DA                           247      ;calculate row and column 
+000011DA  3A03                     248      MOVE.W D3, D5 
+000011DC  8AFC 0004                249      DIVU #4, D5 ;D5 = [remainder | quotient] 
+000011E0  3C05                     250      MOVE.W D5, D6 ;copy result 
+000011E2                           251      
+000011E2  CA7C 00FF                252      AND.W #$00FF, D5 ;quotient (row 0–3) 
+000011E6  0645 0031                253      ADD #'1', D5 ;convert to ASCII row
+000011EA                           254      
+000011EA  4846                     255      SWAP D6 ;remainder now in low word 
+000011EC  CC7C 00FF                256      AND.W #$00FF, D6 ;column (0–3) 
+000011F0  0646 0041                257      ADD #'A', D6 ;convert to ASCII column 
+000011F4                           258  
+000011F4                           259      ;store into OUT_BUF 
+000011F4  43F9 000012AA            260      LEA OUT_BUF, A1 
+000011FA  1285                     261      MOVE.B D5, (A1) ;row 
+000011FC  1346 0001                262      MOVE.B D6, 1(A1) ;column 
+00001200  137C 0020 0002           263      MOVE.B #' ', 2(A1) ;space 
+00001206  137C 0000 0003           264      MOVE.B #0, 3(A1) ;null terminator
+0000120C                           265      
+0000120C                           266      ;print 
+0000120C  303C 000D                267      MOVE #13, D0 
+00001210  43F9 000012AA            268      LEA OUT_BUF, A1 
+00001216  4E4F                     269      TRAP #15 
+00001218                           270  
+00001218                           271  NEXT_COORDS_PRINT: 
+00001218  5243                     272      ADDQ #1, D3 
+0000121A  60AA                     273      BRA PRINT_COORDS_LOOP
+0000121C                           274      
+0000121C                           275  DONE_COORDS_PRINT: 
+0000121C  303C 0006                276      MOVE #6, D0 
+00001220  323C 000A                277      MOVE #10, D1 
+00001224  4E4F                     278      TRAP #15 
+00001226                           279  
+00001226  4E75                     280      RTS
+00001228                           281      
+00001228                           282  *-----------------------------------------------------------
+00001228                           283  *clear-screen
+00001228                           284  *-----------------------------------------------------------
+00001228                           285  CLEAR_SCREEN:
+00001228  303C 000B                286      MOVE #11, D0
+0000122C  323C FF00                287      MOVE.W #$FF00, D1
+00001230  4E4F                     288      TRAP #15
+00001232                           289      
+00001232  4E75                     290      RTS
+00001234                           291      
+00001234                           292  *-----------------------------------------------------------
+00001234                           293  *-----------------------------------------------------------
+00001234                           294  *-----------------------------------------------------------
+00001234                           295  *-----------------------------------------------------------
+00001234                           296  *-----------------------------------------------------------
+00001234                           297  *----------------------------------------------------------- 
+00001234                           298  GAME_TURN:
+00001234  303C 000D                299      MOVE #13, D0
+00001238  43F9 000012E8            300      LEA MSG_GAME_LOOP, A1
+0000123E  4E4F                     301      TRAP #15
+00001240                           302  
+00001240  4EB8 109A                303      JSR ENTER_COORDINATE
+00001244  4EB9 00001258            304      JSR CHECK_COORDINATES
+0000124A  4EB9 00001266            305      JSR CHECK_BATTLESHIPS
+00001250  4EB9 00001274            306      JSR CHANGE_TURN
+00001256                           307  
+00001256  4E75                     308      RTS
+00001258                           309      
+00001258                           310  CHECK_COORDINATES:
+00001258  303C 000D                311      MOVE #13, D0
+0000125C  43F9 000012F7            312      LEA MSG_CHECK_COORD, A1
+00001262  4E4F                     313      TRAP #15
+00001264  4E75                     314      RTS
+00001266                           315  
+00001266                           316  CHECK_BATTLESHIPS:
+00001266  303C 000D                317      MOVE #13, D0
+0000126A  43F9 0000130E            318      LEA MSG_CHECK_SHIPS, A1
+00001270  4E4F                     319      TRAP #15
+00001272  4E75                     320      RTS
+00001274                           321      
+00001274                           322  CHANGE_TURN:
+00001274  303C 000D                323      MOVE #13, D0
+00001278  43F9 0000132F            324      LEA MSG_CHANGE_TURN, A1
+0000127E  4E4F                     325      TRAP #15
+00001280  4E75                     326      RTS
+00001282                           327      
+00001282  FFFF FFFF                328      SIMHALT             ; halt simulator
+00001286                           329  
+00001286                           330  *-----------------------------------------------------------
+00001286                           331  *-----------------------------------------------------------
+00001286                           332  *-----------------------------------------------------------
+00001286                           333  *-----------------------------------------------------------
+00001286                           334  *-----------------------------------------------------------
+00001286                           335  *-----------------------------------------------------------
+00001286                           336  * Put variables and constants here
+00001286                           337      BOARD_P1:      DS.B 16
+00001296                           338      BOARD_P2:      DS.B 16
+000012A6                           339  
+000012A6                           340      INPUT_BUF:     DS.B 4
+000012AA                           341      OUT_BUF:       DS.B 4
+000012AE                           342  
+000012AE                           343  *function messages
+000012AE                           344      MSG_INIT: 
+000012AE= 49 6E 69 74 69 61 ...    345          DC.B 'Initializing game'
+000012BF= 0D 0A 00                 346          DC.B 13,10,0
+000012C2                           347      MSG_VALIDATE_PLACE: 
+000012C2= 56 61 6C 69 64 61 ...    348          DC.B 'Validating placement'
+000012D6= 0D 0A 00                 349          DC.B 13,10,0
+000012D9                           350      MSG_STORE_SHIP:     
+000012D9= 53 74 6F 72 69 6E ...    351          DC.B 'Storing ship'
+000012E5= 0D 0A 00                 352          DC.B 13,10,0
+000012E8                           353      MSG_GAME_LOOP:      
+000012E8= 49 6E 20 67 61 6D ...    354          DC.B 'In game loop'
+000012F4= 0D 0A 00                 355          DC.B 13,10,0
+000012F7                           356      MSG_CHECK_COORD:    
+000012F7= 43 68 65 63 6B 69 ...    357          DC.B 'Checking coordinates'
+0000130B= 0D 0A 00                 358          DC.B 13,10,0
+0000130E                           359      MSG_CHECK_SHIPS:    
+0000130E= 43 68 65 63 6B 69 ...    360          DC.B 'Checking remaining battleships'
+0000132C= 0D 0A 00                 361          DC.B 13,10,0
+0000132F                           362      MSG_CHANGE_TURN:    
+0000132F= 43 68 61 6E 67 69 ...    363          DC.B 'Changing turn'
+0000133C= 0D 0A 00                 364          DC.B 13,10,0
+0000133F                           365          
+0000133F                           366  *prompt messages
+0000133F                           367      MSG_ENTER_COORD:    
+0000133F= 45 6E 74 65 72 20 ...    368          DC.B 'Enter coordinate (FROMAT EG. 1A) :'
+00001361= 0D 0A 00                 369          DC.B 13,10,0
+00001364                           370      MSG_P1_ENTER_SHIP:    
+00001364= 50 6C 61 79 65 72 ...    371          DC.B 'Player One Place Ships'
+0000137A= 0D 0A 00                 372          DC.B 13,10,0
+0000137D                           373      MSG_P2_ENTER_SHIP:    
+0000137D= 50 6C 61 79 65 72 ...    374          DC.B 'Player Two Place Ships'
+00001393= 0D 0A 00                 375          DC.B 13,10,0
+00001396                           376      MSG_P1_SHOW:
+00001396= 50 6C 61 79 65 72 ...    377          DC.B 'Player Ones Coordinates are: '
+000013B3= 0D 0A 00                 378          DC.B 13,10,0
+000013B6                           379      MSG_P2_SHOW:
+000013B6= 50 6C 61 79 65 72 ...    380          DC.B 'Player Twos Coordinates are: '
+000013D3= 0D 0A 00                 381          DC.B 13,10,0
+000013D6                           382  
+000013D6                           383      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -130,23 +393,48 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-CHANGE_TURN         10AE
-CHECK_BATTLESHIPS   10A0
-CHECK_COORDINATES   1092
-ENTER_COORDINATE    1044
-GAME_LOOP           1012
-GAME_TURN           106E
-INIT_GAME           101A
-MSG_CHANGE_TURN     116C
-MSG_CHECK_COORD     112E
-MSG_CHECK_SHIPS     1148
-MSG_ENTER_COORD     10D7
-MSG_GAME_LOOP       111C
-MSG_INIT            10C0
-MSG_STORE_SHIP      110A
-MSG_VALIDATE_PLACE  10F0
-PLACE_LOOP          102C
-PLACE_SHIPS         1028
+BOARD_P1            1286
+BOARD_P2            1296
+CHANGE_TURN         1274
+CHECK_BATTLESHIPS   1266
+CHECK_COORDINATES   1258
+CLEAR_SCREEN        1228
+CLR1                1034
+CLR2                1042
+DONE_COORDS_PRINT   121C
+DONE_GRID_PRINT     1186
+END_LOOP            101E
+ENTER_COORDINATE    109A
+GAME_TURN           1234
+GET_OFFSET          10FA
+INIT_GAME           1020
+INPUT_BUF           12A6
+MSG_CHANGE_TURN     132F
+MSG_CHECK_COORD     12F7
+MSG_CHECK_SHIPS     130E
+MSG_ENTER_COORD     133F
+MSG_GAME_LOOP       12E8
+MSG_INIT            12AE
+MSG_P1_ENTER_SHIP   1364
+MSG_P1_SHOW         1396
+MSG_P2_ENTER_SHIP   137D
+MSG_P2_SHOW         13B6
+MSG_STORE_SHIP      12D9
+MSG_VALIDATE_PLACE  12C2
+NEXT_COORDS_PRINT   1218
+OUT_BUF             12AA
+P1_LOOP             105A
+P2_LOOP             1082
+PLACE_SHIPS_P1      104A
+PLACE_SHIPS_P2      1072
+PRINT_ALL_BOARDS    1104
+PRINT_ALL_COORDS    1192
+PRINT_BOARD_GRID    1136
+PRINT_CHAR          1158
+PRINT_COORDS        11C4
+PRINT_COORDS_LOOP   11C6
+PRINT_GRID_LOOP     1138
+PRINT_ONE           1154
 START               1000
-STORE_SHIP          1060
-VALIDATE_PLACEMENT  1052
+STORE_SHIP_P1       10CA
+STORE_SHIP_P2       10E2
