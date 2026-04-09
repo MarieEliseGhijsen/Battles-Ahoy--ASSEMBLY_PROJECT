@@ -10,11 +10,16 @@ START:                  ; first instruction of program
 * Put program code here
     MOVE.L #$2000, A7
 
+    ;INITIALIZING GAME
     JSR INIT_GAME
     ;JSR PLACE_SHIPS_P1
     ;JSR PLACE_SHIPS_P2
     JSR LOAD_TEST_BOARDS
+    
+    ;GAMEPLAY
+    JSR GAME_TURN
 
+    ;RESULT
     ;JSR PRINT_ALL_COORDS
     JSR PRINT_ALL_BOARDS
 
@@ -144,18 +149,25 @@ ENTER_COORDINATE:
     TRAP #15
 
     ;READ FIRST CHAR (ROW)
-    MOVE #5, D0        ;read single char
-    TRAP #15           ;result in D1
-    MOVE.B D1, D0      ;move to D0
-    AND.L #$000000FF, D0
-    SUB.B #'1', D0     ;convert to 0–3
-    
-    ;READ SECOND CHAR (COLUM)
-    ;CLR.L D1
     MOVE #5, D0
     TRAP #15
-    AND.L #$000000FF, D1
-    SUB.B #'A', D1     ;convert to 0–3
+
+    CLR.L D0
+    MOVE.B D1, D0
+    SUB.B #'1', D0
+    
+    MOVE.B D0, D5
+    
+    ;READ SECOND CHAR (COLUM)
+    MOVE #5, D0
+    TRAP #15
+
+    MOVE.L D1, D6
+    CLR.L D1
+    MOVE.B D6, D1
+    SUB.B #'A', D1
+    
+    MOVE.B D5, D0
 
     RTS
     
@@ -194,9 +206,13 @@ STORE_SHIP_P2:
 *offset
 *-----------------------------------------------------------
 GET_OFFSET:
+    CLR.L D2
     MOVE.B D5, D2 ;row
     MULU #4, D2 ;row*4
-    ADD D6, D2 ;+ col
+    
+    CLR.L D3
+    MOVE.B D6, D3 ;col
+    ADD.L D3, D2 ;+ col
     
     RTS
     
@@ -231,12 +247,28 @@ PRINT_GRID_LOOP:
 
     MOVE.B (A0,D3.W), D4
     CMP.B #1, D4
-    BEQ PRINT_ONE
+    BEQ PRINT_SHIP
+
+    CMP.B #3, D4
+    BEQ PRINT_MISS
+
+    CMP.B #4, D4
+    BEQ PRINT_HIT
+
     MOVE.B #'0', D4
     BRA PRINT_CHAR
     
-PRINT_ONE:
-    MOVE.B #'1', D4
+PRINT_SHIP:
+    MOVE.B #'S', D4
+    BRA PRINT_CHAR
+
+PRINT_MISS:
+    MOVE.B #'M', D4
+    BRA PRINT_CHAR
+
+PRINT_HIT:
+    MOVE.B #'H', D4
+    BRA PRINT_CHAR
 
 PRINT_CHAR:
     LEA OUT_BUF, A1
@@ -360,15 +392,39 @@ GAME_TURN:
 
     JSR ENTER_COORDINATE
     JSR CHECK_COORDINATES
-    JSR CHECK_BATTLESHIPS
-    JSR CHANGE_TURN
+    
+    ;JSR CHECK_BATTLESHIPS
+    ;JSR CHANGE_TURN
 
     RTS
     
 CHECK_COORDINATES:
+    MOVE.B D0, D5
+    MOVE.B D1, D6
+    JSR GET_OFFSET
+    
+    LEA BOARD_P2, A0
+    MOVE.B (A0,D2.W), D4
+    
+    CMP.B #1, D4
+    BEQ IS_HIT
+    
+IS_MISS:
+    MOVE.B #3, (A0,D2.W)
+
     MOVE #13, D0
-    LEA MSG_CHECK_COORD, A1
+    LEA MSG_MISS, A1
     TRAP #15
+
+    RTS
+    
+IS_HIT:
+    MOVE.B #4, (A0,D2.W)
+
+    MOVE #13, D0
+    LEA MSG_HIT, A1
+    TRAP #15
+
     RTS
 
 CHECK_BATTLESHIPS:
@@ -436,6 +492,12 @@ CHANGE_TURN:
         DC.B 13,10,0
     MSG_P2_SHOW:
         DC.B 'Player Twos Coordinates are: '
+        DC.B 13,10,0
+    MSG_MISS:
+        DC.B 'Miss!'
+        DC.B 13,10,0
+    MSG_HIT:
+        DC.B 'Hit!'
         DC.B 13,10,0
 
     END    START        ; last line of source
