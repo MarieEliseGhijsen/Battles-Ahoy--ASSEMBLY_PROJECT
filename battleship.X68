@@ -11,6 +11,7 @@ START:                  ; first instruction of program
     MOVE.L #$2000, A7
 
     ;INITIALIZING GAME
+    CLR.B CURRENT_PLAYER
     JSR INIT_GAME
     ;JSR PLACE_SHIPS_P1
     ;JSR PLACE_SHIPS_P2
@@ -171,11 +172,6 @@ ENTER_COORDINATE:
     SUB.B #'A', D1
     
     MOVE.B D5, D0
-    
-    JSR VALIDATE_COORDINATE
-
-    CMP.B #1, D7
-    BNE ENTER_COORDINATE
 
     RTS
     
@@ -298,7 +294,7 @@ PRINT_ALL_BOARDS:
     LEA BOARD_P1, A0
     JSR PRINT_BOARD_GRID
     
-    JSR WAIT_FOR_KEY
+    ;JSR WAIT_FOR_KEY
 
     MOVE #13, D0
     LEA MSG_P2_SHOW, A1
@@ -402,12 +398,6 @@ DONE_GRID_PRINT:
     TRAP #15
     
     RTS
-    
-WAIT_FOR_KEY:
-    MOVE #5, D0 ;read single character
-    TRAP #15 ;wait until key pressed
-
-    RTS
        
 *-----------------------------------------------------------
 *print-all-coordinates
@@ -478,9 +468,30 @@ DONE_COORDS_PRINT:
 *-----------------------------------------------------------
 *clear-screen
 *-----------------------------------------------------------
+WAIT_FOR_KEY:
+    MOVE #5, D0
+    TRAP #15
+    
+    RTS
+
+CONTINUE:
+    MOVE #13, D0
+    LEA MSG_CONTINUE, A1
+    TRAP #15
+    
+    MOVE #5, D0
+    TRAP #15
+
 CLEAR_SCREEN:
     MOVE #11, D0
     MOVE.W #$FF00, D1
+    TRAP #15
+    
+    RTS
+    
+RESET_CURSOR:
+    MOVE #11, D0
+    MOVE.W #$0000, D1 ;row=0 col=0
     TRAP #15
     
     RTS
@@ -492,12 +503,36 @@ CLEAR_SCREEN:
 *-----------------------------------------------------------
 *----------------------------------------------------------- 
 GAME_TURN:
-    MOVE #13, D0
-    LEA MSG_GAME_LOOP, A1
-    TRAP #15
-
+INPUT_LOOP:
+    *get input
+    JSR PRINT_TURN
+    
     JSR ENTER_COORDINATE
+    JSR VALIDATE_COORDINATE
+
+    CMP.B #1, D7
+    BNE INPUT_LOOP
+    
+    *bomb coordinates
+    TST.B CURRENT_PLAYER
+    BEQ P1_ATTACK
+    
+P2_ATTACK:
+    LEA BOARD_P1, A0 ;P2 attacks P1
+    BRA DO_ATTACK
+
+P1_ATTACK:
+    LEA BOARD_P2, A0 ;P1 attacks P2
+    
+DO_ATTACK:
     JSR CHECK_COORDINATES
+
+    *switch player
+    NOT.B CURRENT_PLAYER
+    
+    JSR CONTINUE
+    
+    RTS
     
     ;JSR CHECK_BATTLESHIPS
     ;JSR CHANGE_TURN
@@ -547,12 +582,32 @@ CHECK_BATTLESHIPS:
     MOVE #13, D0
     LEA MSG_CHECK_SHIPS, A1
     TRAP #15
+    
     RTS
     
 CHANGE_TURN:
     MOVE #13, D0
     LEA MSG_CHANGE_TURN, A1
     TRAP #15
+    
+    RTS
+    
+PRINT_TURN:
+    TST.B CURRENT_PLAYER
+    BEQ P1_MSG
+
+P2_MSG:
+    MOVE #13, D0
+    LEA MSG_P2_TURN, A1
+    TRAP #15
+    
+    RTS
+
+P1_MSG:
+    MOVE #13, D0
+    LEA MSG_P1_TURN, A1
+    TRAP #15
+    
     RTS
     
     SIMHALT             ; halt simulator
@@ -569,6 +624,8 @@ CHANGE_TURN:
 
     INPUT_BUF:     DS.B 4
     OUT_BUF:       DS.B 4
+    
+    CURRENT_PLAYER: DC.B 0 ;0 = P1, 1 = P2
 
 *function messages
     MSG_INIT: 
@@ -597,6 +654,15 @@ CHANGE_TURN:
     GRID_COL_HEADER:
         DC.B '  A B C D'
         DC.B 0
+        
+*turn message
+    MSG_P1_TURN:
+        DC.B 'Player 1 Turn'
+        DC.B 13,10,0
+
+    MSG_P2_TURN:
+        DC.B 'Player 2 Turn'
+        DC.B 13,10,0
         
 *prompt messages
     MSG_P1_ENTER_SHIP:    
@@ -627,6 +693,10 @@ CHANGE_TURN:
         DC.B 13,10,0
     MSG_P2_SHOW:
         DC.B 'Player Twos Coordinates are: '
+        DC.B 13,10,0
+        
+    MSG_CONTINUE:
+        DC.B '[Press any key to continue]'
         DC.B 13,10,0
 
     END    START        ; last line of source
