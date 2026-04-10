@@ -310,13 +310,39 @@ PRINT_ALL_BOARDS:
     RTS
     
 PRINT_BOARD_GRID:
+    MOVE #13, D0
+    LEA GRID_COL_HEADER, A1
+    TRAP #15
+    
     MOVEQ #0, D3 ;index
 
 PRINT_GRID_LOOP:
     CMP #16, D3
     BEQ DONE_GRID_PRINT
+    
+    MOVE.W D3, D5
+    AND.W #3, D5
+    CMP #0, D5
+    BNE SKIP_ROW_LABEL
 
+    ;row = (D3 / 4) + '1'
+    MOVE.W D3, D6
+    DIVU #4, D6 ;quotient = row
+    AND.W #$00FF, D6
+    ADD.B #'1', D6
+
+    MOVE.B D6, D1
+    MOVE #6, D0
+    TRAP #15
+    
+    ;print space after row number
+    MOVE.B #' ', D1
+    MOVE #6, D0
+    TRAP #15
+
+SKIP_ROW_LABEL:
     MOVE.B (A0,D3.W), D4
+
     CMP.B #1, D4
     BEQ PRINT_SHIP
 
@@ -328,7 +354,7 @@ PRINT_GRID_LOOP:
 
     MOVE.B #'0', D4
     BRA PRINT_CHAR
-    
+        
 PRINT_SHIP:
     MOVE.B #'S', D4
     BRA PRINT_CHAR
@@ -342,23 +368,32 @@ PRINT_HIT:
     BRA PRINT_CHAR
 
 PRINT_CHAR:
-    LEA OUT_BUF, A1
-    MOVE.B D4, (A1)
-    MOVE.B #0, 1(A1) ;null-terminate
-    MOVE #13, D0
+    ;print char
+    MOVE.B D4, D1
+    MOVE #6, D0
     TRAP #15
-
+    
+    ;print space
+    MOVE.B #' ', D1
+    MOVE #6, D0
+    TRAP #15
+    
     ADDQ #1, D3
-
+    
     ;newline every 4 cells
     MOVE.W D3, D5
     AND.W #3, D5
     CMP #0, D5
     BNE PRINT_GRID_LOOP
     
-    MOVE #6, D0 ;CR
-    MOVE #10, D1 ;LF
+    MOVE #6, D0
+    MOVE #13, D1
     TRAP #15
+    
+    MOVE #6, D0
+    MOVE #10, D1
+    TRAP #15
+    
     BRA PRINT_GRID_LOOP
 
 DONE_GRID_PRINT:
@@ -557,6 +592,11 @@ CHANGE_TURN:
     MSG_CHANGE_TURN:    
         DC.B 'Changing turn'
         DC.B 13,10,0
+        
+*grid header
+    GRID_COL_HEADER:
+        DC.B '  A B C D'
+        DC.B 0
         
 *prompt messages
     MSG_P1_ENTER_SHIP:    
