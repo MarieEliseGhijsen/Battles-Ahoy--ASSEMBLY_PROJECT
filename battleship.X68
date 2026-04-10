@@ -197,8 +197,7 @@ VALIDATE_COORDINATE:
     MOVE.B D1, D6
     JSR GET_OFFSET
 
-    *check board (ONLY P2 for now)
-    LEA BOARD_P2, A0
+    *check board
     MOVE.B (A0,D2.W), D4
 
     CMP.B #3, D4
@@ -503,28 +502,27 @@ RESET_CURSOR:
 *-----------------------------------------------------------
 *----------------------------------------------------------- 
 GAME_TURN:
-INPUT_LOOP:
-    *get input
-    JSR PRINT_TURN
+    TST.B CURRENT_PLAYER
+    BEQ P2_TURN
+
+P1_TURN:
+    LEA BOARD_P2, A0
+    BRA INPUT_LOOP
+
+P2_TURN:
+    LEA BOARD_P1, A0
     
+INPUT_LOOP:
+    JSR PRINT_TURN
+
+    *get input
     JSR ENTER_COORDINATE
     JSR VALIDATE_COORDINATE
 
     CMP.B #1, D7
     BNE INPUT_LOOP
     
-    *bomb coordinates
-    TST.B CURRENT_PLAYER
-    BEQ P1_ATTACK
-    
-P2_ATTACK:
-    LEA BOARD_P1, A0 ;P2 attacks P1
-    BRA DO_ATTACK
-
-P1_ATTACK:
-    LEA BOARD_P2, A0 ;P1 attacks P2
-    
-DO_ATTACK:
+    *bomb coordinates 
     JSR CHECK_COORDINATES
 
     *switch player
@@ -542,7 +540,6 @@ CHECK_COORDINATES:
     MOVE.B D1, D6
     JSR GET_OFFSET
     
-    LEA BOARD_P2, A0
     MOVE.B (A0,D2.W), D4
     
     CMP.B #1, D4
@@ -758,6 +755,7 @@ P1_MSG:
 ;WON:
 ;win message out to console
 ;go to init
+
 
 
 
