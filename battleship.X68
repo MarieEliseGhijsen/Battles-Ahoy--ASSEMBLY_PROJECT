@@ -171,7 +171,75 @@ ENTER_COORDINATE:
     SUB.B #'A', D1
     
     MOVE.B D5, D0
+    
+    JSR VALIDATE_COORDINATE
 
+    CMP.B #1, D7
+    BNE ENTER_COORDINATE
+
+    RTS
+    
+VALIDATE_COORDINATE:
+    *D0 = row (0–3)
+    *D1 = col (0–3)
+    
+    *bounds check
+    CMP.B #0, D0
+    BLT INVALID
+
+    CMP.B #3, D0
+    BGT INVALID
+
+    CMP.B #0, D1
+    BLT INVALID
+
+    CMP.B #3, D1
+    BGT INVALID
+    
+    *compute offset
+    MOVE.B D0, D5
+    MOVE.B D1, D6
+    JSR GET_OFFSET
+
+    *check board (ONLY P2 for now)
+    LEA BOARD_P2, A0
+    MOVE.B (A0,D2.W), D4
+
+    CMP.B #3, D4
+    BEQ DUPLICATE
+
+    CMP.B #4, D4
+    BEQ DUPLICATE
+    
+    *valid
+    MOVEQ #1, D7
+    
+    RTS
+
+DUPLICATE:
+    MOVE #6, D0
+    MOVE #10, D1
+    TRAP #15
+
+    MOVE #13, D0
+    LEA MSG_ALREADY, A1
+    TRAP #15
+
+    CLR.L D7
+    
+    RTS
+    
+INVALID:
+    MOVE #6, D0
+    MOVE #10, D1
+    TRAP #15
+
+    MOVE #13, D0
+    LEA MSG_INVALID_INPUT, A1
+    TRAP #15
+
+    CLR.L D7
+    
     RTS
     
 *VALIDATE_PLACEMENT:
@@ -393,47 +461,19 @@ GAME_TURN:
     LEA MSG_GAME_LOOP, A1
     TRAP #15
 
-TURN_LOOP:
     JSR ENTER_COORDINATE
     JSR CHECK_COORDINATES
     
     ;JSR CHECK_BATTLESHIPS
     ;JSR CHANGE_TURN
     
-    CMP.B #1, D7
-    BEQ TURN_DONE
-
-    BRA TURN_LOOP
-    
-TURN_DONE:
-    RTS
-    
 CHECK_COORDINATES:
     MOVE.B D0, D5
     MOVE.B D1, D6
-    
-    *check if in bounds
-    CMP.B #0, D0
-    BLT OUT_OF_BOUNDS
-    CMP.B #3, D0
-    BGT OUT_OF_BOUNDS
-
-    CMP.B #0, D1
-    BLT OUT_OF_BOUNDS
-    CMP.B #3, D1
-    BGT OUT_OF_BOUNDS
-    
-    *get valu
     JSR GET_OFFSET
     
     LEA BOARD_P2, A0
     MOVE.B (A0,D2.W), D4
-    
-    *check if guessed already
-    CMP.B #3, D4
-    BEQ ALREADY_GUESSED
-    CMP.B #4, D4
-    BEQ ALREADY_GUESSED
     
     CMP.B #1, D4
     BEQ IS_HIT
@@ -466,32 +506,6 @@ IS_HIT:
     
     MOVEQ #1, D7
 
-    RTS
-    
-ALREADY_GUESSED:
-    MOVE #6, D0 ;CR
-    MOVE #10, D1 ;LF
-    TRAP #15
-
-    MOVE #13, D0
-    LEA MSG_ALREADY, A1
-    TRAP #15
-    
-    CLR.L D7
-
-    RTS
-    
-OUT_OF_BOUNDS:
-    MOVE #6, D0 ;CR
-    MOVE #10, D1 ;LF
-    TRAP #15
-
-    MOVE #13, D0
-    LEA MSG_INVALID_INPUT, A1
-    TRAP #15
-
-    CLR.L D7
-    
     RTS
 
 CHECK_BATTLESHIPS:
