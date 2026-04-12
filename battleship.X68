@@ -11,11 +11,9 @@ START:                  ; first instruction of program
     MOVE.L #$2000, A7
 
     ;INITIALIZING GAME
-    CLR.B CURRENT_PLAYER
     JSR INIT_GAME
-    ;JSR PLACE_SHIPS_P1
-    ;JSR PLACE_SHIPS_P2
-    JSR LOAD_TEST_BOARDS
+    JSR PLACE_SHIPS_P1
+    JSR PLACE_SHIPS_P2
     
     ;GAMEPLAY
 GAME_LOOP:
@@ -35,57 +33,11 @@ END_LOOP:
 *sub-routines
 *-----------------------------------------------------------
 *-----------------------------------------------------------
-*load predetermined boards (for testing)
-*-----------------------------------------------------------
-LOAD_TEST_BOARDS:
-    *Player 1 ships - A3, D2, B1
-    
-    *A3 row=2 col=0
-    MOVE.B #2, D5
-    MOVE.B #0, D6
-    JSR GET_OFFSET
-    LEA BOARD_P1, A0
-    MOVE.B #1, (A0,D2.W)
-    
-    *D2 row=1 col=3
-    MOVE.B #1, D5
-    MOVE.B #3, D6
-    JSR GET_OFFSET
-    MOVE.B #1, (A0,D2.W)
-
-    *B1 row=0 col=1
-    MOVE.B #0, D5
-    MOVE.B #1, D6
-    JSR GET_OFFSET
-    MOVE.B #1, (A0,D2.W)
-    
-    * Player 2 ships - B3, A1, C3
-    LEA BOARD_P2, A0
-
-    *B3 row=2 col=1
-    MOVE.B #2, D5
-    MOVE.B #1, D6
-    JSR GET_OFFSET
-    MOVE.B #1, (A0,D2.W)
-    
-    *A1 row=0 col=0
-    MOVE.B #0, D5
-    MOVE.B #0, D6
-    JSR GET_OFFSET
-    MOVE.B #1, (A0,D2.W)
-
-    *C3 row=2 col=2
-    MOVE.B #2, D5
-    MOVE.B #2, D6
-    JSR GET_OFFSET
-    MOVE.B #1, (A0,D2.W)
-    
-    RTS
-
-*-----------------------------------------------------------
 *init
 *-----------------------------------------------------------
 INIT_GAME: ;clear both boards (16 bytes each)
+    CLR.B CURRENT_PLAYER
+
     LEA BOARD_P1, A0
     MOVEQ #15, D0
     
@@ -114,13 +66,20 @@ PLACE_SHIPS_P1:
     LEA MSG_P1_ENTER_SHIP, A1
     TRAP #15
 
-    MOVE #3, D7
+    MOVE #4, D4
     
 P1_LOOP:
     JSR ENTER_COORDINATE
+    
+    LEA BOARD_P1, A0
+    JSR VALIDATE_PLACEMENT
+    
+    CMP.B #1, D7
+    BNE P1_LOOP
+    
     JSR STORE_SHIP_P1
     
-    SUBQ #1, D7
+    SUBQ #1, D4
     BNE P1_LOOP
     
     JSR CLEAR_SCREEN
@@ -132,13 +91,20 @@ PLACE_SHIPS_P2:
     LEA MSG_P2_ENTER_SHIP, A1
     TRAP #15
 
-    MOVE #3, D7
+    MOVE #4, D4
     
 P2_LOOP:
     JSR ENTER_COORDINATE
+    
+    LEA BOARD_P2, A0
+    JSR VALIDATE_PLACEMENT
+    
+    CMP.B #1, D7
+    BNE P2_LOOP
+    
     JSR STORE_SHIP_P2
     
-    SUBQ #1, D7
+    SUBQ #1, D4
     BNE P2_LOOP
     
     JSR CLEAR_SCREEN
@@ -199,12 +165,12 @@ VALIDATE_COORDINATE:
     JSR GET_OFFSET
 
     *check board
-    MOVE.B (A0,D2.W), D4
+    MOVE.B (A0,D2.W), D3
 
-    CMP.B #3, D4
+    CMP.B #3, D3
     BEQ DUPLICATE
 
-    CMP.B #4, D4
+    CMP.B #4, D3
     BEQ DUPLICATE
     
     *valid
@@ -238,11 +204,44 @@ INVALID:
     
     RTS
     
-*VALIDATE_PLACEMENT:
-*    MOVE #13, D0
-*    LEA MSG_VALIDATE_PLACE, A1
-*    TRAP #15
-*    RTS
+VALIDATE_PLACEMENT:
+    *bounds check
+    CMP.B #0, D0
+    BLT INVALID
+    CMP.B #3, D0
+    BGT INVALID
+
+    CMP.B #0, D1
+    BLT INVALID
+    CMP.B #3, D1
+    BGT INVALID
+    
+    ; get offset
+    MOVE.B D0, D5
+    MOVE.B D1, D6
+    JSR GET_OFFSET
+    
+    MOVE.B (A0,D2.W), D3
+    
+    CMP.B #1, D3 ;ship already exists
+    BEQ DUPLICATE_PLACEMENT
+    
+    MOVEQ #1, D7
+    
+    RTS
+    
+DUPLICATE_PLACEMENT:
+    MOVE #6, D0
+    MOVE #10, D1
+    TRAP #15
+
+    MOVE #13, D0
+    LEA MSG_ALREADY_PLACED, A1
+    TRAP #15
+
+    CLR.L D7
+    
+    RTS
 
 *-----------------------------------------------------------
 *store-ships
@@ -702,7 +701,6 @@ P1_MSG:
     MSG_P1_TURN:
         DC.B 'Player 1 Turn'
         DC.B 13,10,0
-
     MSG_P2_TURN:
         DC.B 'Player 2 Turn'
         DC.B 13,10,0
@@ -720,6 +718,9 @@ P1_MSG:
         DC.B 13,10,0
     MSG_ALREADY:
         DC.B 'Already guessed that location!'
+        DC.B 13,10,0
+    MSG_ALREADY_PLACED:
+        DC.B 'Ship slot already filled!'
         DC.B 13,10,0
     MSG_INVALID_INPUT:
         DC.B 'Invalid Input'
