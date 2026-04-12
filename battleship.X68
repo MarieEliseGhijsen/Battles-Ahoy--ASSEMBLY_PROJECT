@@ -18,14 +18,15 @@ START:                  ; first instruction of program
     JSR LOAD_TEST_BOARDS
     
     ;GAMEPLAY
+GAME_LOOP:
     JSR GAME_TURN
-    JSR GAME_TURN
-    JSR GAME_TURN
-    JSR GAME_TURN
+    
+    TST.B D6
+    BEQ GAME_LOOP
 
     ;RESULT
     ;JSR PRINT_ALL_COORDS
-    JSR PRINT_ALL_BOARDS
+    ;JSR PRINT_ALL_BOARDS
 
 END_LOOP:
     BRA END_LOOP
@@ -503,14 +504,14 @@ RESET_CURSOR:
 *----------------------------------------------------------- 
 GAME_TURN:
     TST.B CURRENT_PLAYER
-    BEQ P2_TURN
-
-P1_TURN:
-    LEA BOARD_P2, A0
-    BRA INPUT_LOOP
+    BEQ P1_TURN
 
 P2_TURN:
     LEA BOARD_P1, A0
+    BRA INPUT_LOOP
+
+P1_TURN:
+    LEA BOARD_P2, A0
     
 INPUT_LOOP:
     JSR PRINT_TURN
@@ -524,6 +525,12 @@ INPUT_LOOP:
     
     *bomb coordinates 
     JSR CHECK_COORDINATES
+    
+    *check win condition
+    JSR CHECK_BATTLESHIPS
+    
+    TST.B D6
+    BNE GAME_END
 
     *switch player
     NOT.B CURRENT_PLAYER
@@ -532,8 +539,8 @@ INPUT_LOOP:
     
     RTS
     
-    ;JSR CHECK_BATTLESHIPS
-    ;JSR CHANGE_TURN
+    GAME_END:
+    RTS
     
 CHECK_COORDINATES:
     MOVE.B D0, D5
@@ -576,10 +583,49 @@ IS_HIT:
     RTS
 
 CHECK_BATTLESHIPS:
-    MOVE #13, D0
-    LEA MSG_CHECK_SHIPS, A1
-    TRAP #15
+    MOVEQ #0, D3
     
+CHECK_LOOP:
+    CMP #16, D3
+    BEQ NO_SHIPS_LEFT
+    
+    MOVE.B (A0,D3.W), D4
+    CMP.B #1, D4
+    BEQ SHIP_FOUND
+    
+    ADDQ #1, D3
+    BRA CHECK_LOOP
+
+SHIP_FOUND:
+    CLR.B D6
+    
+    RTS
+    
+NO_SHIPS_LEFT:
+    MOVEQ #1, D6
+    
+    JSR PRINT_WINNER
+    
+    JSR PRINT_ALL_BOARDS
+    
+    RTS
+    
+PRINT_WINNER:
+    JSR CLEAR_SCREEN
+
+    TST.B CURRENT_PLAYER
+    BEQ P1_WINS
+
+P2_WINS:
+    MOVE #13, D0
+    LEA MSG_P2_WIN, A1
+    TRAP #15
+    RTS
+
+P1_WINS:
+    MOVE #13, D0
+    LEA MSG_P1_WIN, A1
+    TRAP #15
     RTS
     
 CHANGE_TURN:
@@ -695,6 +741,13 @@ P1_MSG:
     MSG_CONTINUE:
         DC.B '[Press any key to continue]'
         DC.B 13,10,0
+        
+    MSG_P1_WIN:
+        DC.B 'Player 1 Wins!'
+        DC.B 13,10,0
+    MSG_P2_WIN:
+        DC.B 'Player 2 Wins!'
+        DC.B 13,10,0
 
     END    START        ; last line of source
     
@@ -755,6 +808,7 @@ P1_MSG:
 ;WON:
 ;win message out to console
 ;go to init
+
 
 
 
